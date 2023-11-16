@@ -39,15 +39,13 @@ lazy_static! {
 
 #[repr(C)]
 pub struct Plugin {
-    pub name: *const i8
+    pub name: *const i8,
+    pub startup_func: *const fn(),
+    pub update_func: *const fn(),
+    pub fixed_update_func: *const fn(),
+
 }
 impl Plugin {
-    // using any rust string type that can be converted to a c string
-    pub fn new<T: AsRef<str>>(name: T) -> Self {
-        Self {
-            name: name.as_ref().as_ptr() as *const i8
-        }
-    }
     pub fn name(&self) -> &str {
         unsafe {
             std::ffi::CStr::from_ptr(self.name).to_str().unwrap()
@@ -89,7 +87,7 @@ pub fn load_plugin(plugin_path: PathBuf) -> Result<Plugin, LoadPluginError>  {
             return Err(LoadPluginError::CompileError(format!("bfps to asm file compilation failed: llc: {}", e)));
         }
 
-        gcc.arg("-nostdlib").arg("-shared").arg(format!("-L{}", std::env::current_exe().unwrap().parent().unwrap().join("assets/pluginlib").to_str().unwrap())).arg("-lbluefox_lib").arg("-o").arg(format!("{}/{}.bfpn", TEMP_DIRECTORY.path().to_str().unwrap(), plugin_name)).arg("-fPIC").arg(format!("{}/{}.s", TEMP_DIRECTORY.path().to_str().unwrap(), plugin_name));
+        gcc.arg("-nostdlib").arg("-shared").arg(format!("-L{}", std::env::current_exe().unwrap().parent().unwrap().join("assets/pluginlib").to_str().unwrap())).arg("-linternal_bluefox_lib").arg("-o").arg(format!("{}/{}.bfpn", TEMP_DIRECTORY.path().to_str().unwrap(), plugin_name)).arg("-fPIC").arg(format!("{}/{}.s", TEMP_DIRECTORY.path().to_str().unwrap(), plugin_name));
         if let Err(e) = gcc.output() {
             return Err(LoadPluginError::CompileError(format!("asm file to bfpn compilation failed: gcc: {}", e)));
         }

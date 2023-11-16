@@ -8,6 +8,7 @@ name = "internal_bluefox_lib"
 path = "src/lib.rs"
 crate-type = ["staticlib", "rlib"]
 
+
 [[bin]]
 name = "bluefox_game"
 path = "src/main.rs"
